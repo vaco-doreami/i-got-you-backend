@@ -7,7 +7,7 @@ const {
   getAllRooms,
 } = require("./gameRooms");
 
-module.exports = (server) => {
+module.exports = server => {
   const io = socketio(server, {
     cors: {
       origin: "*",
@@ -15,7 +15,7 @@ module.exports = (server) => {
     },
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection", socket => {
     socket.on("enter-roomList", () => {
       const rooms = getAllRooms();
 

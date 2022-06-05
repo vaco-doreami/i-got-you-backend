@@ -13,7 +13,7 @@ exports.joinRoom = (roomId, socketId, player) => {
   };
 };
 
-exports.getRoomPlayers = (roomId) => {
+exports.getRoomPlayers = roomId => {
   const gameRoom = rooms[roomId];
   const players = [];
 
