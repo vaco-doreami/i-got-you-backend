@@ -4,5 +4,6 @@
   "bracetSpacing": true,
   "traiingComma": "all",
   "arrowParens": "avoid",
-  "endOLine": "auto"
+  "endOLine": "auto",
+  "printWidth": 300
 }

@@ -1,11 +1,6 @@
 const socketio = require("socket.io");
 
-const {
-  createRoom,
-  joinRoom,
-  getRoomPlayers,
-  getAllRooms,
-} = require("./gameRooms");
+const { createRoom, joinRoom, getJobCounts, getAllJobCounts, getAllRooms } = require("./gameRooms");
 
 module.exports = server => {
   const io = socketio(server, {
@@ -16,59 +11,54 @@ module.exports = server => {
   });
 
   io.on("connection", socket => {
-    socket.on("enter-roomList", () => {
+    socket.on("enter-room-list", () => {
       const rooms = getAllRooms();
 
       socket.join("roomList");
       socket.broadcast.to("roomList").emit("send-rooms", rooms);
     });
 
-    socket.on(
-      "create-room",
-      ({ nickname, job, characterType, coordinateX, coordinateY }) => {
-        const socketId = socket.id;
+    socket.on("create-room", ({ nickname, job, characterType, coordinateX, coordinateY }) => {
+      const socketId = socket.id;
 
-        const player = {
-          isHost: true,
-          nickname,
-          job,
-          characterType,
-          coordinateX,
-          coordinateY,
-        };
+      const newPlayer = {
+        id: socketId,
+        nickname,
+        job,
+        characterType,
+        coordinateX,
+        coordinateY,
+      };
 
-        createRoom(socketId, player);
-        socket.join(socketId);
+      createRoom(newPlayer);
+      socket.join(socketId);
 
-        const rooms = getAllRooms();
+      const rooms = getAllRooms();
+      socket.broadcast.to("roomList").emit("send-rooms", rooms);
+    });
 
-        socket.broadcast.to("roomList").emit("send-rooms", rooms);
-      }
-    );
+    socket.on("join-room", ({ roomId, nickname, job, characterType, coordinateX, coordinateY }) => {
+      const socketId = socket.id;
 
-    socket.on(
-      "join-room",
-      ({ roomId, nickname, job, characterType, coordinateX, coordinateY }) => {
-        const socketId = socket.id;
+      socket.leave("roomList");
 
-        socket.leave("roomList");
+      const newPlayer = {
+        id: socketId,
+        nickname,
+        job,
+        characterType,
+        coordinateX,
+        coordinateY,
+      };
 
-        const player = {
-          isHost: false,
-          nickname,
-          job,
-          characterType,
-          coordinateX,
-          coordinateY,
-        };
+      joinRoom(roomId, newPlayer);
+      socket.join(roomId);
 
-        joinRoom(roomId, socketId, player);
-        socket.join(roomId);
+      const roomParticipants = getJobCounts(roomId);
+      const roomsParticipants = getAllJobCounts();
 
-        const players = getRoomPlayers(roomId);
-
-        socket.broadcast.to(roomId).emit("receive-player", players);
-      }
-    );
+      socket.broadcast.to(roomId).emit("receive-player", roomParticipants);
+      socket.broadcast.to("roomList").emit("receive-player", roomsParticipants);
+    });
   });
 };
