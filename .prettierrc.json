@@ -3,6 +3,7 @@
   "singleQuote": false,
   "bracetSpacing": true,
   "traiingComma": "all",
-  "arroParens": "avoid",
-  "endOLine": "auto"
+  "arrowParens": "avoid",
+  "endOLine": "auto",
+  "printWidth": 300
 }
