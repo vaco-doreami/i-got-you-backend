@@ -12,7 +12,7 @@ exports.createRoom = newPlayer => {
     hostId: hostPlayerId,
   };
 
-  newPlayer.job === "police" ? rooms[hostPlayerId].policeId.push(hostPlayerId) : rooms[hostPlayerId].robberId.push(hostPlayerId);
+  newPlayer.role === "police" ? rooms[hostPlayerId].policeId.push(hostPlayerId) : rooms[hostPlayerId].robberId.push(hostPlayerId);
 };
 
 exports.joinRoom = (roomId, newPlayer) => {
@@ -22,7 +22,7 @@ exports.joinRoom = (roomId, newPlayer) => {
 
   rooms[roomId].playersId.push(playerId);
 
-  newPlayer.job === "police" ? rooms[roomId].policeId.push(playerId) : rooms[roomId].robberId.push(playerId);
+  newPlayer.role === "police" ? rooms[roomId].policeId.push(playerId) : rooms[roomId].robberId.push(playerId);
 };
 
 exports.getJobCounts = roomId => {

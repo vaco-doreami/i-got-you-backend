@@ -5,8 +5,7 @@ const { createRoom, joinRoom, getJobCounts, getAllJobCounts, getAllRooms } = req
 module.exports = server => {
   const io = socketio(server, {
     cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
+      origin: "http://localhost:3000",
     },
   });
 
@@ -18,13 +17,13 @@ module.exports = server => {
       socket.broadcast.to("roomList").emit("send-rooms", rooms);
     });
 
-    socket.on("create-room", ({ nickname, job, characterType, coordinateX, coordinateY }) => {
+    socket.on("create-room", ({ nickname, role, characterType, coordinateX, coordinateY }) => {
       const socketId = socket.id;
 
       const newPlayer = {
         id: socketId,
         nickname,
-        job,
+        role,
         characterType,
         coordinateX,
         coordinateY,
@@ -34,10 +33,13 @@ module.exports = server => {
       socket.join(socketId);
 
       const rooms = getAllRooms();
+      const roomParticipants = getJobCounts(socketId);
+
       socket.broadcast.to("roomList").emit("send-rooms", rooms);
+      io.in(socketId).emit("receive-player", roomParticipants);
     });
 
-    socket.on("join-room", ({ roomId, nickname, job, characterType, coordinateX, coordinateY }) => {
+    socket.on("join-room", ({ roomId, nickname, role, characterType, coordinateX, coordinateY }) => {
       const socketId = socket.id;
 
       socket.leave("roomList");
@@ -45,7 +47,7 @@ module.exports = server => {
       const newPlayer = {
         id: socketId,
         nickname,
-        job,
+        role,
         characterType,
         coordinateX,
         coordinateY,
@@ -59,6 +61,10 @@ module.exports = server => {
 
       socket.broadcast.to(roomId).emit("receive-player", roomParticipants);
       socket.broadcast.to("roomList").emit("receive-player", roomsParticipants);
+    });
+
+    socket.on("disconnect", () => {
+      console.log(`socket disconnected ${socket.id}`);
     });
   });
 };

@@ -7,7 +7,7 @@ const cors = require("cors");
 
 const app = express();
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8000;
 const server = http.createServer(app);
 
 const webSocket = require("./utils/socketio");
@@ -34,3 +34,5 @@ app.use(function (err, req, res, next) {
 });
 
 server.listen(port);
+server.on("error", error => console.error(error));
+server.on("listening", () => console.log(`listening on port ${port}`));
