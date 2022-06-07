@@ -12,7 +12,7 @@ exports.createRoom = newPlayer => {
     hostId: hostPlayerId,
   };
 
-  newPlayer.job === "police" ? rooms[hostPlayerId].policeId.push(hostPlayerId) : rooms[hostPlayerId].robberId.push(hostPlayerId);
+  newPlayer.role === "police" ? rooms[hostPlayerId].policeId.push(hostPlayerId) : rooms[hostPlayerId].robberId.push(hostPlayerId);
 };
 
 exports.joinRoom = (roomId, newPlayer) => {
@@ -22,30 +22,30 @@ exports.joinRoom = (roomId, newPlayer) => {
 
   rooms[roomId].playersId.push(playerId);
 
-  newPlayer.job === "police" ? rooms[roomId].policeId.push(playerId) : rooms[roomId].robberId.push(playerId);
+  newPlayer.role === "police" ? rooms[roomId].policeId.push(playerId) : rooms[roomId].robberId.push(playerId);
 };
 
-exports.getJobCounts = roomId => {
+exports.getRoleCounts = roomId => {
   const policeCount = rooms[roomId].policeId.length;
   const robberCount = rooms[roomId].robberId.length;
 
-  const roomJobCounts = {
+  const roomRoleCounts = {
     police: policeCount,
     robber: robberCount,
   };
 
-  return roomJobCounts;
+  return roomRoleCounts;
 };
 
-exports.getAllJobCounts = () => {
-  const allJobCounts = {};
+exports.getAllRoleCounts = () => {
+  const allRoleCounts = {};
 
   for (const room in rooms) {
-    allJobCounts[room].policeCount = rooms[room].policeId.length;
-    allJobCounts[room].robberCount = rooms[room].robberId.length;
+    allRoleCounts[room].policeCount = rooms[room].policeId.length;
+    allRoleCounts[room].robberCount = rooms[room].robberId.length;
   }
 
-  return allJobCounts;
+  return allRoleCounts;
 };
 
 exports.getAllRooms = () => {
