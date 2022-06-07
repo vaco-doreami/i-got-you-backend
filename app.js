@@ -34,3 +34,5 @@ app.use(function (err, req, res, next) {
 });
 
 server.listen(port);
+server.on("error", error => console.error(error));
+server.on("listening", () => console.log(`listening on port ${port}`));

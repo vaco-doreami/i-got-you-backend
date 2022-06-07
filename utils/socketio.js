@@ -6,7 +6,6 @@ module.exports = server => {
   const io = socketio(server, {
     cors: {
       origin: "*",
-      methods: ["GET", "POST"],
     },
   });
 
@@ -18,13 +17,13 @@ module.exports = server => {
       socket.broadcast.to("roomList").emit("send-rooms", rooms);
     });
 
-    socket.on("create-room", ({ nickname, Role, characterType, coordinateX, coordinateY }) => {
+    socket.on("create-room", ({ nickname, role, characterType, coordinateX, coordinateY }) => {
       const socketId = socket.id;
 
       const newPlayer = {
         id: socketId,
         nickname,
-        Role,
+        role,
         characterType,
         coordinateX,
         coordinateY,
