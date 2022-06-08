@@ -1,6 +1,6 @@
 const socketio = require("socket.io");
 
-const { createRoom, joinRoom, getRoleCounts, getAllRoleCounts, getAllRooms } = require("./gameRooms");
+const { createRoom, joinRoom, getRoleCounts, getAllRooms } = require("./gameRooms");
 
 module.exports = server => {
   const io = socketio(server, {
@@ -13,8 +13,8 @@ module.exports = server => {
     socket.on("enter-room-list", () => {
       const rooms = getAllRooms();
 
-      socket.join("roomList");
-      socket.broadcast.to("roomList").emit("send-rooms", rooms);
+      socket.join("roomListPage");
+      io.in("roomListPage").emit("send-rooms", rooms);
     });
 
     socket.on("create-room", ({ nickname, role, characterType, coordinateX, coordinateY }) => {
@@ -33,16 +33,22 @@ module.exports = server => {
       socket.join(socketId);
 
       const rooms = getAllRooms();
-      const roomRoleCounts = getRoleCounts(socketId);
 
-      socket.broadcast.to("roomList").emit("send-rooms", rooms);
-      io.in(socketId).emit("receive-player", roomRoleCounts);
+      socket.broadcast.to("roomListPage").emit("send-rooms", rooms);
     });
 
-    socket.on("join-room", ({ roomId, nickname, role, characterType, coordinateX, coordinateY }) => {
+    socket.on("standby-room", roomId => {
+      const roomRoleCounts = getRoleCounts(roomId);
+
+      socket.join(roomId);
+
+      io.in(roomId).emit("receive-player", roomRoleCounts);
+    });
+
+    socket.on("join-room", (roomId, { nickname, role, characterType, coordinateX, coordinateY }) => {
       const socketId = socket.id;
 
-      socket.leave("roomList");
+      socket.leave("roomListPage");
 
       const newPlayer = {
         id: socketId,
@@ -57,10 +63,10 @@ module.exports = server => {
       socket.join(roomId);
 
       const roomRoleCounts = getRoleCounts(roomId);
-      const allRoleCounts = getAllRoleCounts();
+      const rooms = getAllRooms();
 
-      socket.broadcast.to(roomId).emit("receive-player", roomRoleCounts);
-      socket.broadcast.to("roomList").emit("receive-player", allRoleCounts);
+      io.in(roomId).emit("receive-player", roomRoleCounts);
+      socket.broadcast.to("roomListPage").emit("send-rooms", rooms);
     });
   });
 };
