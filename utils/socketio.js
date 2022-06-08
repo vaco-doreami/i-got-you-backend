@@ -1,6 +1,6 @@
 const socketio = require("socket.io");
 
-const { createRoom, joinRoom, getRoleCounts, getAllRoleCounts, getAllRooms } = require("./gameRooms");
+const { createRoom, joinRoom, getRoleCounts, getAllRooms } = require("./gameRooms");
 
 module.exports = server => {
   const io = socketio(server, {
@@ -13,8 +13,8 @@ module.exports = server => {
     socket.on("enter-room-list", () => {
       const rooms = getAllRooms();
 
-      socket.join("roomList");
-      io.in("roomList").emit("send-rooms", rooms);
+      socket.join("roomListPage");
+      io.in("roomListPage").emit("send-rooms", rooms);
     });
 
     socket.on("create-room", ({ nickname, role, characterType, coordinateX, coordinateY }) => {
@@ -34,7 +34,7 @@ module.exports = server => {
 
       const rooms = getAllRooms();
 
-      socket.broadcast.to("roomList").emit("send-rooms", rooms);
+      socket.broadcast.to("roomListPage").emit("send-rooms", rooms);
     });
 
     socket.on("standby-room", roomId => {
@@ -48,7 +48,7 @@ module.exports = server => {
     socket.on("join-room", (roomId, { nickname, role, characterType, coordinateX, coordinateY }) => {
       const socketId = socket.id;
 
-      socket.leave("roomList");
+      socket.leave("roomListPage");
 
       const newPlayer = {
         id: socketId,
@@ -66,7 +66,7 @@ module.exports = server => {
       const rooms = getAllRooms();
 
       io.in(roomId).emit("receive-player", roomRoleCounts);
-      io.in("roomList").emit("send-rooms", rooms);
+      socket.broadcast.to("roomListPage").emit("send-rooms", rooms);
     });
   });
 };
