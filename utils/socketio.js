@@ -1,6 +1,6 @@
 const socketio = require("socket.io");
 
-const { createRoom, joinRoom, getRoleCounts, getAllRooms } = require("./gameRooms");
+const { createRoom, joinRoom, getRoleCounts, getPlayersInfo, getAllRooms } = require("./gameRooms");
 
 module.exports = server => {
   const io = socketio(server, {
@@ -67,6 +67,16 @@ module.exports = server => {
 
       io.in(roomId).emit("receive-player", roomRoleCounts);
       socket.broadcast.to("roomListPage").emit("send-rooms", rooms);
+    });
+
+    socket.on("press-run-button", roomId => {
+      io.in(roomId).emit("change-all-player-scene");
+    });
+
+    socket.on("game-enter", roomId => {
+      const playersInfo = getPlayersInfo(roomId);
+
+      socket.emit("send-room-players-info", playersInfo);
     });
   });
 };
