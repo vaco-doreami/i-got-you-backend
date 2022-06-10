@@ -10,20 +10,38 @@ module.exports = server => {
   });
 
   io.on("connection", socket => {
+    socket.on("find-current-room", roomId => {
+      const rooms = getAllRooms();
+      const currentRoom = rooms[roomId];
+
+      socket.emit("return-current-room", currentRoom);
+    });
+
+    socket.on("sending-signal-to-connect-webRTC", payload => {
+      io.to(payload.userToSignal).emit("new-video-chat-participant", { signal: payload.signal, callerID: payload.callerID });
+    });
+
+    socket.on("returning-signal-to-connect-webRTC", payload => {
+      io.to(payload.callerID).emit("receiving-returned-signal-to-connect-webRTC", { signal: payload.signal, id: socket.id });
+    });
+
     socket.on("enter-room-list", () => {
       const rooms = getAllRooms();
 
       socket.join("roomListPage");
+
+      io.to(socket.id).emit("send-socket-id", socket.id);
       io.in("roomListPage").emit("send-rooms", rooms);
     });
 
-    socket.on("create-room", ({ nickname, role, characterType, coordinateX, coordinateY }) => {
+    socket.on("create-room", ({ nickname, role, isHost, characterType, coordinateX, coordinateY }) => {
       const socketId = socket.id;
 
       const newPlayer = {
         id: socketId,
         nickname,
         role,
+        isHost,
         characterType,
         coordinateX,
         coordinateY,
@@ -34,6 +52,7 @@ module.exports = server => {
 
       const rooms = getAllRooms();
 
+      io.to(socket.id).emit("send-socket-id", socketId);
       socket.broadcast.to("roomListPage").emit("send-rooms", rooms);
     });
 
@@ -45,7 +64,7 @@ module.exports = server => {
       io.in(roomId).emit("receive-player", roomRoleCounts);
     });
 
-    socket.on("join-room", (roomId, { nickname, role, characterType, coordinateX, coordinateY }) => {
+    socket.on("join-room", (roomId, { nickname, role, isHost, characterType, coordinateX, coordinateY }) => {
       const socketId = socket.id;
 
       socket.leave("roomListPage");
@@ -54,6 +73,7 @@ module.exports = server => {
         id: socketId,
         nickname,
         role,
+        isHost,
         characterType,
         coordinateX,
         coordinateY,
