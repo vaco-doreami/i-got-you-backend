@@ -1,6 +1,6 @@
 const socketio = require("socket.io");
 
-const { createRoom, joinRoom, getRoleCounts, getPlayersInfo, getAllRooms } = require("./gameRooms");
+const { createRoom, joinRoom, getRoleCounts, getPlayersInfo, updatePlayerPosition, getAllRooms } = require("./gameRooms");
 
 module.exports = server => {
   const io = socketio(server, {
@@ -34,15 +34,16 @@ module.exports = server => {
       io.in("roomListPage").emit("send-rooms", rooms);
     });
 
-    socket.on("create-room", ({ role, isHost, nickname, coordinateX, coordinateY, characterType }) => {
+    socket.on("create-room", ({ role, isHost, nickname, characterType }) => {
       const newPlayer = {
         id: socket.id,
         role,
         isHost,
         nickname,
-        coordinateX,
-        coordinateY,
         characterType,
+        currentDirection: "stop",
+        coordinateX: Math.floor(Math.random() * 600) + 200,
+        coordinateY: Math.floor(Math.random() * 300) + 500,
       };
 
       createRoom(newPlayer);
@@ -62,7 +63,7 @@ module.exports = server => {
       io.in(roomId).emit("receive-player", roomRoleCounts);
     });
 
-    socket.on("join-room", (roomId, { nickname, role, isHost, characterType, coordinateX, coordinateY }) => {
+    socket.on("join-room", (roomId, { nickname, role, isHost, characterType }) => {
       const socketId = socket.id;
 
       socket.leave("roomListPage");
@@ -73,8 +74,9 @@ module.exports = server => {
         role,
         isHost,
         characterType,
-        coordinateX,
-        coordinateY,
+        currentDirection: "stop",
+        coordinateX: Math.floor(Math.random() * 600) + 200,
+        coordinateY: Math.floor(Math.random() * 300) + 500,
       };
 
       joinRoom(roomId, newPlayer);
@@ -95,6 +97,18 @@ module.exports = server => {
       const playersInfo = getPlayersInfo(roomId);
 
       socket.emit("send-room-players-info", playersInfo);
+    });
+
+    socket.on("player-move", ({ roomId, playerId, currentDirection, coordinateX, coordinateY }) => {
+      const player = updatePlayerPosition(playerId, currentDirection, coordinateX, coordinateY);
+
+      io.to(roomId).emit("send-move-player", player);
+    });
+
+    socket.on("player-stop", ({ roomId, playerId, currentDirection, coordinateX, coordinateY }) => {
+      const player = updatePlayerPosition(playerId, currentDirection, coordinateX, coordinateY);
+
+      io.to(roomId).emit("send-stop-player", player);
     });
   });
 };
