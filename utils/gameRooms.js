@@ -43,6 +43,17 @@ exports.getPlayersInfo = roomId => {
   return playersInfo;
 };
 
+exports.updatePlayerPosition = (playerId, currentDirection, coordinateX, coordinateY) => {
+  players[playerId] = {
+    ...players[playerId],
+    currentDirection,
+    coordinateX,
+    coordinateY,
+  };
+
+  return players[playerId];
+};
+
 exports.getAllRooms = () => {
   return rooms;
 };
