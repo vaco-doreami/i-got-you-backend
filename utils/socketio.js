@@ -10,11 +10,11 @@ module.exports = server => {
   });
 
   io.on("connection", socket => {
-    socket.on("find-current-room", roomId => {
+    socket.on("find-current-joining-room", roomId => {
       const rooms = getAllRooms();
       const currentRoom = rooms[roomId];
 
-      socket.emit("return-current-room", currentRoom);
+      socket.emit("send-current-joining-room", currentRoom);
     });
 
     socket.on("sending-signal-to-connect-webRTC", payload => {
@@ -34,25 +34,23 @@ module.exports = server => {
       io.in("roomListPage").emit("send-rooms", rooms);
     });
 
-    socket.on("create-room", ({ nickname, role, isHost, characterType, coordinateX, coordinateY }) => {
-      const socketId = socket.id;
-
+    socket.on("create-room", ({ role, isHost, nickname, coordinateX, coordinateY, characterType }) => {
       const newPlayer = {
-        id: socketId,
-        nickname,
+        id: socket.id,
         role,
         isHost,
-        characterType,
+        nickname,
         coordinateX,
         coordinateY,
+        characterType,
       };
 
       createRoom(newPlayer);
-      socket.join(socketId);
+      socket.join(socket.id);
 
       const rooms = getAllRooms();
 
-      io.to(socket.id).emit("send-socket-id", socketId);
+      io.to(socket.id).emit("send-socket-id", socket.id);
       socket.broadcast.to("roomListPage").emit("send-rooms", rooms);
     });
 
