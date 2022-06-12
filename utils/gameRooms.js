@@ -10,17 +10,26 @@ exports.createRoom = newPlayer => {
     policeId: [],
     robberId: [],
     hostId: hostPlayerId,
+    isProgressGame: false,
   };
 
   newPlayer.role === "police" ? rooms[hostPlayerId].policeId.push(hostPlayerId) : rooms[hostPlayerId].robberId.push(hostPlayerId);
 };
 
 exports.joinRoom = (roomId, newPlayer) => {
-  const playerId = newPlayer.id;
+  const isRoomInPlayer = rooms[roomId][newPlayer.role + "Id"].find(id => id === newPlayer.id);
 
-  players[playerId] = newPlayer;
+  if (!isRoomInPlayer) {
+    const playerId = newPlayer.id;
 
-  newPlayer.role === "police" ? rooms[roomId].policeId.push(playerId) : rooms[roomId].robberId.push(playerId);
+    players[playerId] = newPlayer;
+
+    newPlayer.role === "police" ? rooms[roomId].policeId.push(playerId) : rooms[roomId].robberId.push(playerId);
+
+    return true;
+  } else {
+    return false;
+  }
 };
 
 exports.getRoleCounts = roomId => {
@@ -52,6 +61,22 @@ exports.updatePlayerPosition = (playerId, currentDirection, coordinateX, coordin
   };
 
   return players[playerId];
+};
+
+exports.leaveRoom = payload => {
+  if (payload.isHost) {
+    delete rooms[payload.roomId];
+
+    return;
+  }
+
+  if (rooms[payload.roomId]) {
+    const leaveRoomPlayerIdIndex = rooms[payload.roomId][payload.role + "Id"].findIndex(target => target === payload.id);
+
+    rooms[payload.roomId][payload.role + "Id"].splice(leaveRoomPlayerIdIndex, 1);
+
+    return;
+  }
 };
 
 exports.getAllRooms = () => {
