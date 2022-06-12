@@ -1,6 +1,6 @@
 const socketio = require("socket.io");
 
-const { createRoom, joinRoom, getRoleCounts, getPlayersInfo, updatePlayerPosition, getAllRooms } = require("./gameRooms");
+const { createRoom, joinRoom, getRoleCounts, getPlayersInfo, updatePlayerPosition, getAllRooms, getCurrentRoomInfo } = require("./gameRooms");
 
 module.exports = server => {
   const io = socketio(server, {
@@ -109,6 +109,15 @@ module.exports = server => {
       const player = updatePlayerPosition(playerId, currentDirection, coordinateX, coordinateY);
 
       io.to(roomId).emit("send-stop-player", player);
+    });
+
+    socket.on("arrest-robber", (roomId, robberId) => {
+      const infoByRole = getCurrentRoomInfo(roomId);
+
+      const filteredRobber = infoByRole.robberId.filter(id => id !== robberId);
+      const deleteRobberFromInfo = { ...infoByRole, robberId: filteredRobber };
+
+      io.to(roomId).emit("send-information", deleteRobberFromInfo);
     });
   });
 };
