@@ -110,5 +110,13 @@ module.exports = server => {
 
       io.to(roomId).emit("send-stop-player", player);
     });
+
+    socket.on("police-opacity-change", ({ roomId, playerId }) => {
+      io.to(roomId).emit("send-collided-player", playerId);
+    });
+
+    socket.on("arrest-robber", ({ roomId, playerId }) => {
+      io.to(roomId).emit("send-arrested-player", playerId);
+    });
   });
 };
