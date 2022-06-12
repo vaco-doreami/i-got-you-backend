@@ -35,10 +35,6 @@ exports.getRoleCounts = roomId => {
   return roomRoleCounts;
 };
 
-exports.getCurrentRoomInfo = roomId => {
-  return rooms[roomId];
-};
-
 exports.getPlayersInfo = roomId => {
   const playersId = [...rooms[roomId].policeId, ...rooms[roomId].robberId];
 
