@@ -1,6 +1,6 @@
 const socketio = require("socket.io");
 
-const { createRoom, joinRoom, getRoleCounts, getPlayersInfo, updatePlayerPosition, getAllRooms, leaveRoom } = require("./gameRooms");
+const { createRoom, joinRoom, getRoleCounts, getPlayersInfo, updatePlayerPosition, getAllRooms, leaveRoom, arrestRobber } = require("./gameRooms");
 
 module.exports = server => {
   const io = socketio(server, {
@@ -12,6 +12,7 @@ module.exports = server => {
   io.on("connection", socket => {
     socket.on("find-current-joining-room", roomId => {
       const rooms = getAllRooms();
+
       const currentRoom = rooms[roomId];
 
       socket.emit("send-current-joining-room", currentRoom);
@@ -31,7 +32,7 @@ module.exports = server => {
       socket.join("roomListPage");
 
       io.to(socket.id).emit("send-socket-id", socket.id);
-      io.in("roomListPage").emit("send-rooms", rooms);
+      io.to("roomListPage").emit("send-rooms", rooms);
     });
 
     socket.on("create-room", ({ role, isHost, nickname, characterType }) => {
@@ -60,7 +61,7 @@ module.exports = server => {
 
       socket.join(roomId);
 
-      io.in(roomId).emit("receive-player", roomRoleCounts);
+      io.to(roomId).emit("receive-player", roomRoleCounts);
     });
 
     socket.on("join-room", (roomId, { nickname, role, isHost, characterType }) => {
@@ -83,9 +84,10 @@ module.exports = server => {
       socket.join(roomId);
 
       const roomRoleCounts = getRoleCounts(roomId);
+
       const rooms = getAllRooms();
 
-      io.in(roomId).emit("receive-player", roomRoleCounts);
+      io.to(roomId).emit("receive-player", roomRoleCounts);
       socket.broadcast.to("roomListPage").emit("send-rooms", rooms);
     });
 
@@ -112,13 +114,15 @@ module.exports = server => {
       rooms[roomId].isProgressGame = true;
 
       io.in("roomListPage").emit("send-rooms", rooms);
-      io.in(roomId).emit("change-all-player-scene");
+      io.to(roomId).emit("change-all-player-scene");
     });
 
     socket.on("game-enter", roomId => {
-      const playersInfo = getPlayersInfo(roomId);
+      const playerInfoCombined = getPlayersInfo(roomId);
 
-      socket.emit("send-room-players-info", playersInfo);
+      const { playerInfo, robbersId } = playerInfoCombined;
+
+      io.to(roomId).emit("send-room-players-info", playerInfo, robbersId);
     });
 
     socket.on("player-move", ({ roomId, playerId, currentDirection, coordinateX, coordinateY }) => {
@@ -138,7 +142,9 @@ module.exports = server => {
     });
 
     socket.on("arrest-robber", ({ roomId, playerId }) => {
-      io.to(roomId).emit("send-arrested-player", playerId);
+      const remainingRobberNumber = arrestRobber(roomId, playerId);
+
+      io.to(roomId).emit("send-arrested-player", playerId, remainingRobberNumber);
     });
   });
 };
