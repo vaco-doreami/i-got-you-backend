@@ -1,6 +1,6 @@
 const socketio = require("socket.io");
 
-const { createRoom, joinRoom, getRoleCounts, getPlayersInfo, updatePlayerPosition, getAllRooms } = require("./gameRooms");
+const { createRoom, joinRoom, getRoleCounts, getPlayersInfo, updatePlayerPosition, getAllRooms, leaveRoom } = require("./gameRooms");
 
 module.exports = server => {
   const io = socketio(server, {
@@ -89,7 +89,29 @@ module.exports = server => {
       socket.broadcast.to("roomListPage").emit("send-rooms", rooms);
     });
 
+    socket.on("leave-room", payload => {
+      leaveRoom(payload);
+
+      const rooms = getAllRooms();
+
+      if (rooms[payload.roomId]) {
+        socket.leave(payload.roomId);
+
+        const roomRoleCounts = getRoleCounts(payload.roomId);
+
+        io.in(payload.roomId).emit("receive-player", roomRoleCounts);
+        io.in(payload.id).emit("leave-room-player-redirect-room-list");
+      } else {
+        io.in(payload.roomId).emit("leave-room-player-redirect-room-list");
+      }
+    });
+
     socket.on("press-run-button", roomId => {
+      const rooms = getAllRooms();
+
+      rooms[roomId].isProgressGame = true;
+
+      io.in("roomListPage").emit("send-rooms", rooms);
       io.in(roomId).emit("change-all-player-scene");
     });
 
