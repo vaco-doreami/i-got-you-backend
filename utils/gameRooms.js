@@ -43,7 +43,7 @@ exports.getRoleCounts = roomId => {
   return roomRoleCounts;
 };
 
-exports.getPlayersInfo = roomId => {
+exports.getPlayersInformation = roomId => {
   const allPlayerId = [...rooms[roomId].policeId, ...rooms[roomId].robberId];
 
   const robbersId = rooms[roomId].robberId;

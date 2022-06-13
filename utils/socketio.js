@@ -1,6 +1,6 @@
 const socketio = require("socket.io");
 
-const { createRoom, joinRoom, getRoleCounts, getPlayersInfo, updatePlayerPosition, getAllRooms, leaveRoom, arrestRobber } = require("./gameRooms");
+const { createRoom, joinRoom, getRoleCounts, getPlayersInformation, updatePlayerPosition, getAllRooms, leaveRoom, arrestRobber } = require("./gameRooms");
 
 module.exports = server => {
   const io = socketio(server, {
@@ -118,11 +118,11 @@ module.exports = server => {
     });
 
     socket.on("game-enter", roomId => {
-      const playerInfoCombined = getPlayersInfo(roomId);
+      const playersInformationAndRobbersId = getPlayersInformation(roomId);
 
-      const { playerInfo, robbersId } = playerInfoCombined;
+      const { playerInformation, robbersId } = playersInformationAndRobbersId;
 
-      io.to(roomId).emit("send-room-players-info", playerInfo, robbersId);
+      io.to(roomId).emit("send-room-players-info", playerInformation, robbersId);
     });
 
     socket.on("player-move", ({ roomId, playerId, currentDirection, coordinateX, coordinateY }) => {
