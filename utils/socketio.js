@@ -1,6 +1,6 @@
 const socketio = require("socket.io");
 
-const { createRoom, joinRoom, getRoleCounts, getPlayersInformation, updatePlayerPosition, getAllRooms, leaveRoom, arrestRobber } = require("./gameRooms");
+const { createRoom, joinRoom, getRoleCounts, getPlayersInformation, updatePlayerPosition, getAllRooms, leaveRoom, arrestRobber, getRoomById, setStartPosition } = require("./gameRooms");
 
 module.exports = server => {
   const io = socketio(server, {
@@ -36,6 +36,8 @@ module.exports = server => {
     });
 
     socket.on("create-room", ({ role, isHost, nickname, characterType }) => {
+      const { coordinateX, coordinateY } = setStartPosition(socket.id, role);
+
       const newPlayer = {
         id: socket.id,
         role,
@@ -43,8 +45,8 @@ module.exports = server => {
         nickname,
         characterType,
         currentDirection: "stop",
-        coordinateX: Math.floor(Math.random() * 600) + 200,
-        coordinateY: Math.floor(Math.random() * 300) + 500,
+        coordinateX: coordinateX,
+        coordinateY: coordinateY,
       };
 
       createRoom(newPlayer);
@@ -69,6 +71,8 @@ module.exports = server => {
 
       socket.leave("roomListPage");
 
+      const { coordinateX, coordinateY } = setStartPosition(roomId, role);
+
       const newPlayer = {
         id: socketId,
         nickname,
@@ -76,8 +80,8 @@ module.exports = server => {
         isHost,
         characterType,
         currentDirection: "stop",
-        coordinateX: Math.floor(Math.random() * 600) + 200,
-        coordinateY: Math.floor(Math.random() * 300) + 500,
+        coordinateX: coordinateX,
+        coordinateY: coordinateY,
       };
 
       joinRoom(roomId, newPlayer);
@@ -118,11 +122,11 @@ module.exports = server => {
     });
 
     socket.on("game-enter", roomId => {
-      const playersInformationAndRobbersId = getPlayersInformation(roomId);
+      const playersInformationAndplayersId = getPlayersInformation(roomId);
 
-      const { playerInformation, robbersId } = playersInformationAndRobbersId;
+      const { playerInformation, policesId, robbersId } = playersInformationAndplayersId;
 
-      io.to(roomId).emit("send-room-players-info", playerInformation, robbersId);
+      io.to(roomId).emit("send-room-players-info", playerInformation, policesId, robbersId);
     });
 
     socket.on("player-move", ({ roomId, playerId, currentDirection, coordinateX, coordinateY }) => {
@@ -145,6 +149,28 @@ module.exports = server => {
       const remainingRobberNumber = arrestRobber(roomId, playerId);
 
       io.to(roomId).emit("send-arrested-player", playerId, remainingRobberNumber);
+    });
+
+    socket.on("leave-game", ({ roomId, playerId, playerRole }) => {
+      socket.leave(roomId);
+
+      const room = getRoomById(roomId);
+
+      if (playerRole === "police") {
+        room.policeId = room.policeId.filter(id => id !== playerId);
+      } else {
+        room.robberId = room.robberId.filter(id => id !== playerId);
+      }
+
+      io.to(roomId).emit("send-left-player", room, playerId);
+    });
+
+    socket.on("close-video", roomId => {
+      io.to(roomId).emit("set-video", false);
+    });
+
+    socket.on("open-video", roomId => {
+      io.to(roomId).emit("set-video", true);
     });
   });
 };
