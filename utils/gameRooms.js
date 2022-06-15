@@ -2,22 +2,24 @@ const rooms = {};
 const players = {};
 
 exports.createRoom = newPlayer => {
-  const hostPlayerId = newPlayer.id;
+  const hostId = newPlayer.id;
 
-  players[hostPlayerId] = newPlayer;
+  players[hostId] = newPlayer;
 
-  rooms[hostPlayerId] = {
+  rooms[hostId] = {
+    hostId,
     policeId: [],
     robberId: [],
-    hostId: hostPlayerId,
     isProgressGame: false,
   };
 
-  newPlayer.role === "police" ? rooms[hostPlayerId].policeId.push(hostPlayerId) : rooms[hostPlayerId].robberId.push(hostPlayerId);
+  newPlayer.role === "police" ? rooms[hostId].policeId.push(hostId) : rooms[hostId].robberId.push(hostId);
 };
 
 exports.joinRoom = (roomId, newPlayer) => {
-  const isPlayerInRoom = rooms[roomId][newPlayer.role + "Id"].find(id => id === newPlayer.id);
+  const currentRoom = rooms[roomId];
+
+  const isPlayerInRoom = currentRoom[newPlayer.role + "Id"].find(id => id === newPlayer.id);
 
   if (!isPlayerInRoom) {
     const playerId = newPlayer.id;
@@ -28,6 +30,7 @@ exports.joinRoom = (roomId, newPlayer) => {
 
     return true;
   }
+
   return false;
 };
 
@@ -88,13 +91,13 @@ exports.leaveRoom = payload => {
 };
 
 exports.arrestRobber = (roomId, playerId) => {
-  const currentJoiningRoom = rooms[roomId];
+  let currentJoiningRoomRobbers = rooms[roomId].robberId;
 
-  if (rooms[roomId].robberId.indexOf(playerId) !== -1) {
-    rooms[roomId].robberId = currentJoiningRoom.robberId.filter(id => id !== playerId);
+  if (currentJoiningRoomRobbers.indexOf(playerId) !== -1) {
+    currentJoiningRoomRobbers = currentJoiningRoomRobbers.filter(id => id !== playerId);
   }
 
-  return rooms[roomId].robberId.length;
+  return currentJoiningRoomRobbers.length;
 };
 
 exports.getRoomById = roomId => {

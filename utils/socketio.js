@@ -11,19 +11,21 @@ module.exports = server => {
 
   io.on("connection", socket => {
     socket.on("find-current-joining-room", roomId => {
-      const rooms = getAllRooms();
-
-      const currentRoom = rooms[roomId];
+      const currentRoom = getRoomById(roomId);
 
       socket.emit("send-current-joining-room", currentRoom);
     });
 
     socket.on("sending-signal-to-connect-webRTC", payload => {
-      io.to(payload.userToSignal).emit("new-video-chat-participant", { signal: payload.signal, callerID: payload.callerID });
+      const { signal, callerID } = payload;
+
+      io.to(payload.userToSignal).emit("new-video-chat-participant", { signal, callerID });
     });
 
     socket.on("returning-signal-to-connect-webRTC", payload => {
-      io.to(payload.callerID).emit("receiving-returned-signal-to-connect-webRTC", { signal: payload.signal, id: socket.id });
+      const { signal, callerID } = payload;
+
+      io.to(callerID).emit("receiving-returned-signal-to-connect-webRTC", { signal, id: socket.id });
     });
 
     socket.on("enter-room-list", () => {
@@ -35,7 +37,7 @@ module.exports = server => {
       io.to("roomListPage").emit("send-rooms", rooms);
     });
 
-    socket.on("create-room", ({ role, isHost, nickname, characterType }) => {
+    socket.on("assign-room-creator-as-host", ({ role, isHost, nickname, characterType }) => {
       const { coordinateX, coordinateY } = setStartPosition(socket.id, role);
 
       const newPlayer = {
@@ -44,9 +46,9 @@ module.exports = server => {
         isHost,
         nickname,
         characterType,
-        currentDirection: "stop",
         coordinateX: coordinateX,
         coordinateY: coordinateY,
+        currentDirection: "stop",
       };
 
       createRoom(newPlayer);
@@ -58,7 +60,7 @@ module.exports = server => {
       socket.broadcast.to("roomListPage").emit("send-rooms", rooms);
     });
 
-    socket.on("standby-room", roomId => {
+    socket.on("standby", roomId => {
       const roomRoleCounts = getRoleCounts(roomId);
 
       socket.join(roomId);
@@ -67,21 +69,19 @@ module.exports = server => {
     });
 
     socket.on("join-room", (roomId, { nickname, role, isHost, characterType }) => {
-      const socketId = socket.id;
-
       socket.leave("roomListPage");
 
       const { coordinateX, coordinateY } = setStartPosition(roomId, role);
 
       const newPlayer = {
-        id: socketId,
-        nickname,
+        id: socket.id,
         role,
         isHost,
+        nickname,
         characterType,
-        currentDirection: "stop",
         coordinateX: coordinateX,
         coordinateY: coordinateY,
+        currentDirection: "stop",
       };
 
       joinRoom(roomId, newPlayer);
@@ -115,7 +115,9 @@ module.exports = server => {
     socket.on("press-run-button", roomId => {
       const rooms = getAllRooms();
 
-      rooms[roomId].isProgressGame = true;
+      const currentRoom = getRoomById(roomId);
+
+      currentRoom.isProgressGame = true;
 
       io.in("roomListPage").emit("send-rooms", rooms);
       io.to(roomId).emit("change-all-player-scene");
