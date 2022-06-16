@@ -118,7 +118,8 @@ module.exports = server => {
         currentDirection: "stop",
       };
 
-      joinRoom(roomId, newPlayer);
+      if (!joinRoom(roomId, newPlayer)) return;
+
       socket.join(roomId);
 
       const roomRoleCounts = getRoleCounts(roomId);
