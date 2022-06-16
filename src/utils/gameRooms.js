@@ -1,5 +1,5 @@
-const rooms = {};
 const players = {};
+const rooms = {};
 
 exports.createRoom = newPlayer => {
   const hostId = newPlayer.id;
@@ -91,13 +91,13 @@ exports.leaveRoom = payload => {
 };
 
 exports.arrestRobber = (roomId, playerId) => {
-  let currentJoiningRoomRobbers = rooms[roomId].robberId;
+  const currentJoiningRoom = rooms[roomId];
 
-  if (currentJoiningRoomRobbers.indexOf(playerId) !== -1) {
-    currentJoiningRoomRobbers = currentJoiningRoomRobbers.filter(id => id !== playerId);
+  if (rooms[roomId].robberId.indexOf(playerId) !== -1) {
+    rooms[roomId].robberId = currentJoiningRoom.robberId.filter(id => id !== playerId);
   }
 
-  return currentJoiningRoomRobbers.length;
+  return rooms[roomId].robberId.length;
 };
 
 exports.getRoomById = roomId => {
