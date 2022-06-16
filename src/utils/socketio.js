@@ -1,35 +1,36 @@
 const socketio = require("socket.io");
 const {
-  ASSIGN_ROOM_CREATOR_AS_HOST,
-  ENTER_ROOM_LIST,
-  ENTER_GAME,
-  JOIN_ROOM,
   STANDBY,
-  PRESS_RUN_BUTTON,
-  PLAYER_MOVE,
-  PLAYER_STOP,
-  ARREST_ROBBER,
-  RECEIVE_PLAYER,
-  CHANGE_ALL_PLAYER_SCENE,
-  POLICE_OPACITY_CHANGED,
-  FIND_CURRENT_JOINING_ROOM,
-  LEAVE_ROOM_PLAYER_REDIRECT_ROOM_LIST,
-  LEAVE_ROOM,
-  LEAVE_GAME,
+  JOIN_ROOM,
   SEND_ROOMS,
-  SEND_SOCKET_ID,
-  SEND_LEFT_PLAYER,
-  SEND_CURRENT_JOINING_ROOM,
-  SEND_ARRESTED_PLAYER,
-  SEND_ROOM_PLAYERS_INFORMATION,
-  SEND_COLLIDED_PLAYER,
-  SEND_MOVE_PLAYER,
-  SEND_STOP_PLAYER,
+  ENTER_GAME,
   SET_VIDEO,
   OPEN_VIDEO,
   CLOSE_VIDEO,
-  RETURNING_SIGNAL_TO_CONNECT_WEBRTC,
+  PLAYER_MOVE,
+  PLAYER_STOP,
+  LEAVE_ROOM,
+  LEAVE_GAME,
+  ARREST_ROBBER,
+  RECEIVE_PLAYER,
+  ENTER_ROOM_LIST,
+  HANDLE_RUN_BUTTON,
+  SEND_MOVE_PLAYER,
+  SEND_STOP_PLAYER,
+  SEND_SOCKET_ID,
+  SEND_EXIT_PLAYER,
+  SEND_ARRESTED_PLAYER,
+  SEND_COLLIDED_PLAYER,
+  POLICE_OPACITY_CHANGED,
+  CHANGE_ALL_PLAYER_SCENE,
+  SEND_CURRENT_JOINING_ROOM,
+  FIND_CURRENT_JOINING_ROOM,
+  NEW_VIDEO_CHAT_PARTICIPANT,
+  ASSIGN_ROOM_CREATOR_AS_HOST,
+  SEND_ROOM_PLAYERS_INFORMATION,
   SENDING_SIGNAL_TO_CONNECT_WEBRTC,
+  RETURNING_SIGNAL_TO_CONNECT_WEBRTC,
+  LEAVE_ROOM_PLAYER_REDIRECT_ROOM_LIST,
   RECEIVING_RETURNED_SIGNAL_TO_CONNECT_WEBRTC,
 } = require("../constants/socket");
 
@@ -52,7 +53,7 @@ module.exports = server => {
     socket.on(SENDING_SIGNAL_TO_CONNECT_WEBRTC, payload => {
       const { signal, callerID } = payload;
 
-      io.to(payload.userToSignal).emit("new-video-chat-participant", { signal, callerID });
+      io.to(payload.userToSignal).emit(NEW_VIDEO_CHAT_PARTICIPANT, { signal, callerID });
     });
 
     socket.on(RETURNING_SIGNAL_TO_CONNECT_WEBRTC, payload => {
@@ -145,7 +146,7 @@ module.exports = server => {
       }
     });
 
-    socket.on(PRESS_RUN_BUTTON, roomId => {
+    socket.on(HANDLE_RUN_BUTTON, roomId => {
       const rooms = getAllRooms();
 
       const currentRoom = getRoomById(roomId);
@@ -197,7 +198,7 @@ module.exports = server => {
         room.robberId = room.robberId.filter(id => id !== playerId);
       }
 
-      io.to(roomId).emit(SEND_LEFT_PLAYER, room, playerId);
+      io.to(roomId).emit(SEND_EXIT_PLAYER, room, playerId);
     });
 
     socket.on(OPEN_VIDEO, roomId => {

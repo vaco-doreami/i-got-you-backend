@@ -10,7 +10,7 @@ const app = express();
 const port = process.env.PORT || 8080;
 const server = http.createServer(app);
 
-const webSocket = require("./utils/socketio");
+const webSocket = require("./src/utils/socketio");
 webSocket(server);
 
 app.use(cors());
