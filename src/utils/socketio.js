@@ -71,7 +71,7 @@ module.exports = server => {
       io.to("roomListPage").emit(SEND_ROOMS, rooms);
     });
 
-    socket.on(ASSIGN_ROOM_CREATOR_AS_HOST, ({ role, isHost, nickname, characterType }) => {
+    socket.on(ASSIGN_ROOM_CREATOR_AS_HOST, ({ role, isHost, nickname, characterType }, roomTitle) => {
       const { coordinateX, coordinateY } = setStartPosition(socket.id, role);
 
       const newPlayer = {
@@ -85,7 +85,7 @@ module.exports = server => {
         currentDirection: "stop",
       };
 
-      createRoom(newPlayer);
+      createRoom(newPlayer, roomTitle);
       socket.join(socket.id);
 
       const rooms = getAllRooms();
