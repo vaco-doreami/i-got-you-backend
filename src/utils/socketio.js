@@ -158,9 +158,9 @@ module.exports = server => {
     });
 
     socket.on(ENTER_GAME, roomId => {
-      const playersInformationAndplayersId = getPlayersInformation(roomId);
+      const playersInformation = getPlayersInformation(roomId);
 
-      const { playerInformation, policesId, robbersId } = playersInformationAndplayersId;
+      const { playerInformation, policesId, robbersId } = playersInformation;
 
       io.to(roomId).emit(SEND_ROOM_PLAYERS_INFORMATION, playerInformation, policesId, robbersId);
     });
