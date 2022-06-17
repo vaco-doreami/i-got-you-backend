@@ -44,9 +44,9 @@ exports.getRoleCounts = roomId => {
 exports.getPlayersInformation = roomId => {
   const allPlayerId = [...rooms[roomId].policeId, ...rooms[roomId].robberId];
 
-  const playerInformation = allPlayerId.map(id => players[id]);
+  const playersInformation = allPlayerId.map(id => players[id]);
 
-  return playerInformation;
+  return playersInformation;
 };
 
 exports.updatePlayerPosition = (playerId, currentDirection, coordinateX, coordinateY) => {
