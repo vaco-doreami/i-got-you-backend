@@ -71,7 +71,7 @@ module.exports = server => {
       io.to("roomListPage").emit(SEND_ROOMS, rooms);
     });
 
-    socket.on(ASSIGN_ROOM_CREATOR_AS_HOST, ({ role, isHost, nickname, characterPath, characterType }) => {
+    socket.on(ASSIGN_ROOM_CREATOR_AS_HOST, ({ role, isHost, nickname, characterPath, characterType }, roomTitle) => {
       const { coordinateX, coordinateY } = setStartPosition(socket.id, role);
 
       const hostPlayer = {
@@ -86,7 +86,7 @@ module.exports = server => {
         currentDirection: "stop",
       };
 
-      createRoom(hostPlayer);
+      createRoom(hostPlayer, roomTitle);
       socket.join(socket.id);
 
       const rooms = getAllRooms();
@@ -163,9 +163,7 @@ module.exports = server => {
     socket.on(ENTER_GAME, roomId => {
       const playersInformation = getPlayersInformation(roomId);
 
-      const roomRoleCounts = getRoleCounts(roomId);
-
-      io.to(roomId).emit(SEND_ROOM_PLAYERS_INFORMATION, playersInformation, roomRoleCounts);
+      io.to(roomId).emit(SEND_ROOM_PLAYERS_INFORMATION, playersInformation);
     });
 
     socket.on(PLAYER_MOVE, ({ roomId, playerId, currentDirection, coordinateX, coordinateY }) => {
@@ -187,21 +185,33 @@ module.exports = server => {
     socket.on(ARREST_ROBBER, ({ roomId, playerId }) => {
       const remainingRobberNumber = arrestRobber(roomId, playerId);
 
+      if (remainingRobberNumber === 0) {
+        const rooms = getAllRooms(roomId);
+
+        delete rooms[roomId];
+      }
+
       io.to(roomId).emit(SEND_ARRESTED_PLAYER, playerId, remainingRobberNumber);
     });
 
     socket.on(LEAVE_GAME, ({ roomId, playerId, playerRole }) => {
       socket.leave(roomId);
 
+      const rooms = getAllRooms();
+
       const room = getRoomById(roomId);
 
-      if (playerRole === "police") {
-        room.policeId = room.policeId.filter(id => id !== playerId);
-      } else {
-        room.robberId = room.robberId.filter(id => id !== playerId);
-      }
+      if (rooms[roomId]) {
+        if (playerRole === "police") {
+          room.policeId = room.policeId.filter(id => id !== playerId);
+        } else {
+          room.robberId = room.robberId.filter(id => id !== playerId);
+        }
 
-      io.to(roomId).emit(SEND_EXIT_PLAYER, room, playerId);
+        if (room.policeId.length === 0 || room.robberId.length === 0) delete rooms[roomId];
+
+        io.to(roomId).emit(SEND_EXIT_PLAYER, room, playerId);
+      }
     });
 
     socket.on(OPEN_VIDEO, roomId => {
