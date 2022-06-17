@@ -5,7 +5,7 @@ exports.LEAVE_ROOM = "leave-room";
 exports.LEAVE_GAME = "leave-game";
 exports.ENTER_ROOM_LIST = "enter-room-list";
 exports.CHANGE_ALL_PLAYER_SCENE = "change-all-player-scene";
-exports.FIND_CURRENT_JOINING_ROOM = "find-current-joining-room";
+exports.FIND_ENTERED_ROOM = "find-entered-room";
 exports.ASSIGN_ROOM_CREATOR_AS_HOST = "assign-room-creator-as-host";
 exports.LEAVE_ROOM_PLAYER_REDIRECT_ROOM_LIST = "leave-room-player-redirect-room-list";
 
@@ -23,7 +23,7 @@ exports.SEND_MOVE_PLAYER = "send-move-player";
 exports.SEND_STOP_PLAYER = "send-stop-player";
 exports.SEND_ARRESTED_PLAYER = "send-arrested-player";
 exports.SEND_COLLIDED_PLAYER = "send-collided-player";
-exports.SEND_CURRENT_JOINING_ROOM = "send-current-joining-room";
+exports.SEND_ENTERED_ROOM = "send-entered-room";
 exports.SEND_ROOM_PLAYERS_INFORMATION = "send-room-players-info";
 
 exports.SET_VIDEO = "set-video";
