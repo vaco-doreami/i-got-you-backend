@@ -1,13 +1,14 @@
 const players = {};
 const rooms = {};
 
-exports.createRoom = newPlayer => {
+exports.createRoom = (newPlayer, roomTitle) => {
   const hostId = newPlayer.id;
 
   players[hostId] = newPlayer;
 
   rooms[hostId] = {
     hostId,
+    roomTitle,
     policeId: [],
     robberId: [],
     isProgressGame: false,
