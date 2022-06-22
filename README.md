@@ -5,6 +5,7 @@
 <br />
 
 # 💭 **Motivation**
+![](/README.assets/main_screen.png)
 
 어렸을 때 누구나 한 번쯤은 친구들과 경찰과 도둑 게임 해보지 않으셨나요?
 
