@@ -69,25 +69,27 @@
 
 # 🎬 **Getting Started**
 ### **Client**
+
+`env`파일을 `root`경로에 만들고 아래 내용을 추가해 주세요
+```
+REACT_APP_SERVER_URL=localhost:8000
+```
 ```
 git clone https://github.com/vaco-doreami/i-got-you-frontend.git
 npm install
 npm start
 ```
-`env`파일을 `root`경로에 만들고 아래 내용을 추가해 주세요
-```
-REACT_APP_SERVER_URL=localhost:8000
-```
 
 ### **Server**
-```
-git clone https://github.com/vaco-doreami/i-got-you-backend.git
-npm install
-npm start
-```
+
 `env`파일을 `root`경로에 만들고 아래 내용을 추가해 주세요
 ```
 PORT=8000
+```
+```
+git clone https://github.com/vaco-doreami/i-got-you-backend.git
+npm install
+npm run dev
 ```
 
 
@@ -154,7 +156,7 @@ PORT=8000
 
 - **recoil**
 
-  상태관리 라이브러리를 알아보던 중에 recoil이 react 전용 라이브러리로 학습해야 할 양도 적고 작성해야 할 코드양도 redux보다 훨씬 적다는 것을 알게 되었습니다. 다만, recoil이
+  상태관리 라이브러리를 알아보던 중에 react 전용 라이브러리로 recoil이 러닝커브가 낮아 3주라는 짧은 시간에 적용시키는데 무리가 없을 것 같다고 생각하였습니다. 다만, recoil이
   전역에서 많은 데이터를 처리하면 나중에 성능상 이슈가 생길 수도 있다는 점이 걸렸습니다. 상태로 관리해야 할 값들이 뭐가 있을지를 생각해보니까 캐릭터의 위치값이나
   방향에 대한 데이터의 경우 게임 진행하는 동안에만 사용되어 따로 상태로 관리할 필요 없이 socket을 통해 데이터를 받아 바로 Phaser의 캐릭터에 적용하면 될 것 같다고 생각하게 되었고, 그러다 보니까 상태로 관리할 값이 플레이어의 정보, 모달 정도라고 생각되어서 recoil을 사용하여도 문제가 없을 것 같다고 생각되어서 recoil을 선택하게 되었습니다.
 
